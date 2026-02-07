@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-
+import Loader from "../components/Loader";
 const Dashboard = () => {
   const { authAxios } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Dashboard = () => {
     };
   }, []);
 
-  if (!stats) return null;
+  if (!stats) return <Loader />;
 
   return (
     <div className="min-h-screen p-8">
@@ -197,3 +197,4 @@ const SummaryCard = ({ label, value }) => (
 );
 
 export default Dashboard;
+
