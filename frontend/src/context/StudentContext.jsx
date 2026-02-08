@@ -57,6 +57,19 @@ export const StudentProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  const updateStudent = async (stuId, formData) => {
+    try {
+      setLoading(true);
+      await authAxios.put(`/api/students/${stuId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success("Updation Success!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to Update student");
+    }
+  };
   return (
     <StudentContext.Provider
       value={{
@@ -66,6 +79,7 @@ export const StudentProvider = ({ children }) => {
         getStudentById,
         deleteStudent,
         addStudent,
+        updateStudent,
       }}
     >
       {children}
