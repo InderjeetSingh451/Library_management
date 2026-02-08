@@ -1,3 +1,4 @@
+// cron/autoAbsent.js
 import cron from "node-cron";
 import Attendance from "../models/Attendance.js";
 import Student from "../models/Student.js";
@@ -20,12 +21,17 @@ cron.schedule(`${MINUTE} ${HOUR} * * *`, async () => {
 
       if (alreadyExists) continue;
 
+      // 🔥 Get last attendance
       const lastAttendance = await Attendance.findOne({
         student: student._id,
       }).sort({ createdAt: -1 });
 
-      if (lastAttendance && lastAttendance.openSession) {
-        // Student stayed overnight / across boundary
+      /**
+       * REAL LOGIC:
+       * - If last session is OPEN → student inside → PRESENT
+       * - Else → ABSENT
+       */
+      if (lastAttendance && lastAttendance.openSession === true) {
         await Attendance.create({
           student: student._id,
           date: today,
@@ -44,7 +50,7 @@ cron.schedule(`${MINUTE} ${HOUR} * * *`, async () => {
       }
     }
 
-    console.log(`✅ Auto-absent ran at ${DAY_START_TIME} for ${today}`);
+    console.log(`✅ Auto attendance processed for ${today}`);
   } catch (err) {
     console.error("❌ Auto-absent error:", err.message);
   }
