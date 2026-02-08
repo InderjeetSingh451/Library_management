@@ -2,6 +2,21 @@ import { useState } from "react";
 import { useStudents } from "../context/StudentContext";
 import Loader from "../components/Loader";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+/* =============== AGE CALCULATOR =============== */
+const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
 
 const AddStudent = () => {
   const { addStudent, loading } = useStudents();
@@ -22,9 +37,34 @@ const AddStudent = () => {
 
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [isDobValid, setIsDobValid] = useState(false);
 
+  /* =============== CHANGE HANDLER =============== */
   const changeHandler = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "dob") {
+      if (!value) {
+        setIsDobValid(false);
+        setForm({ ...form, dob: "", age: "" });
+        toast.error("Date of Birth is required");
+        return;
+      }
+
+      const age = calculateAge(value);
+
+      if (age < 3) {
+        setIsDobValid(false);
+        setForm({ ...form, dob: "", age: "" });
+        toast.error("Student must be at least 3 years old");
+        return;
+      }
+
+      setIsDobValid(true);
+      setForm({ ...form, dob: value, age });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const imageHandler = (e) => {
@@ -34,15 +74,56 @@ const AddStudent = () => {
     setPreview(URL.createObjectURL(file));
   };
 
+  /* =============== SUBMIT HANDLER =============== */
   const submitHandler = async (e) => {
     e.preventDefault();
-    if (!image) return alert("Image is required");
+
+    if (!form.name.trim()) {
+      toast.error("Student Name is required");
+      return;
+    }
+
+    if (!form.fatherName.trim()) {
+      toast.error("Father Name is required");
+      return;
+    }
+
+    if (!form.dob || !isDobValid) {
+      toast.error("Please enter a valid Date of Birth");
+      return;
+    }
+
+    if (!form.gender) {
+      toast.error("Gender is required");
+      return;
+    }
+
+    if (!form.category) {
+      toast.error("Category is required");
+      return;
+    }
+
+    if (!form.address.trim()) {
+      toast.error("Address is required");
+      return;
+    }
+
+    if (!form.monthlyFees) {
+      toast.error("Monthly Fees is required");
+      return;
+    }
+
+    if (!image) {
+      toast.error("Student image is required");
+      return;
+    }
 
     const formData = new FormData();
     Object.keys(form).forEach((key) => formData.append(key, form[key]));
     formData.append("image", image);
 
     await addStudent(formData);
+    toast.success("Student added successfully");
     navigate("/students");
   };
 
@@ -58,88 +139,85 @@ const AddStudent = () => {
 
       {/* Form */}
       <form onSubmit={submitHandler} className="px-10 py-8 space-y-10">
-        {/* Basic Info */}
         <Section title="Basic Information">
-          <Input
-            label="Student Name"
-            name="name"
-            placeholder="Enter student name"
-            onChange={changeHandler}
-          />
+          <Input label="Student Name" name="name" onChange={changeHandler} />
           <Input
             label="Father Name"
             name="fatherName"
-            placeholder="Enter father name"
             onChange={changeHandler}
           />
         </Section>
 
-        {/* Personal Info */}
         <Section title="Personal Details">
           <Input
             label="Date of Birth"
             name="dob"
             type="date"
+            max={
+              new Date(new Date().setFullYear(new Date().getFullYear() - 3))
+                .toISOString()
+                .split("T")[0]
+            }
             onChange={changeHandler}
           />
+
           <Input
             label="Age"
             name="age"
             type="number"
-            placeholder="Age"
-            onChange={changeHandler}
+            value={form.age}
             required={false}
+            readOnly
           />
+
           <Select
             label="Gender"
             name="gender"
             options={["Male", "Female", "Other"]}
             onChange={changeHandler}
           />
+
           <Select
             label="Category"
             name="category"
             options={["GEN", "EWS", "OBC", "SC", "ST", "Other"]}
             onChange={changeHandler}
           />
+
           <Input
             label="Phone Number"
             name="phone"
             type="number"
             onChange={changeHandler}
-            required={false} // ❌ not mandatory
+            required={false}
           />
+
           <Input
             label="Mail ID"
             name="email"
             type="email"
             onChange={changeHandler}
-            required={false} // ❌ not mandatory
+            required={false}
           />
         </Section>
 
-        {/* Address */}
         <Section title="Address">
           <Textarea
             label="Full Address"
             name="address"
-            placeholder="Enter full address"
             onChange={changeHandler}
           />
         </Section>
 
-        {/* Fees */}
         <Section title="Fees Information">
           <Input
             label="Monthly Fees"
             name="monthlyFees"
             type="number"
-            placeholder="Monthly fees"
             onChange={changeHandler}
           />
         </Section>
 
-        {/* Image Upload */}
         <Section title="Student Photo">
           <div className="flex items-start gap-8">
             <div className="flex-1">
@@ -173,7 +251,6 @@ const AddStudent = () => {
           </div>
         </Section>
 
-        {/* Submit */}
         <div className="flex justify-end pt-6">
           <button
             type="submit"
@@ -212,6 +289,8 @@ const Input = ({
   placeholder,
   onChange,
   required = true,
+  value,
+  readOnly = false,
 }) => (
   <div>
     <label className="block text-sm font-semibold mb-2">
@@ -223,9 +302,12 @@ const Input = ({
       name={name}
       placeholder={placeholder}
       onChange={onChange}
+      value={value}
+      readOnly={readOnly}
       required={required}
-      className="w-full px-4 py-3 rounded-xl border
-      focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className={`w-full px-4 py-3 rounded-xl border
+      focus:outline-none focus:ring-2 focus:ring-indigo-500
+      ${readOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
     />
   </div>
 );
