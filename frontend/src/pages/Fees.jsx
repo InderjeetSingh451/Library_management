@@ -19,6 +19,7 @@ const Fees = () => {
       )
     : feesStudents;
 
+  // console.log(filteredFeesStudents);
   if (loading) return <Loader />;
 
   return (
@@ -129,7 +130,14 @@ const Fees = () => {
                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
                 }`}
               >
-                <td className="px-5 py-4 font-medium">{student.name}</td>
+                <td className="px-5 py-4 gap-2 font-medium flex items-center">
+                  <img
+                    src={student.image?.url}
+                    alt={student.name}
+                    className="h-4 w-4 sm:h-10 sm:w-10 rounded-full object-cover"
+                  />
+                  {student.name}
+                </td>
                 <td className="px-5 py-4 font-mono text-xs">
                   {student.libraryId}
                 </td>
