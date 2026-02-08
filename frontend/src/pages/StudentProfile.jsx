@@ -26,8 +26,8 @@ const StudentProfile = () => {
   if (!data) return <Loader />;
 
   const { student, attendance } = data;
-  console.log(student);
-  console.log(attendance);
+  // console.log(student);
+  // console.log(attendance);
   const enrolledDate = new Date(student.createdAt).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -374,3 +374,4 @@ const StudentProfile = () => {
 };
 
 export default StudentProfile;
+
