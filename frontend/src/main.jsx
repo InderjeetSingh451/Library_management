@@ -7,7 +7,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { StudentProvider } from "./context/StudentContext";
 import { AttendanceProvider } from "./context/AttendanceContext";
 import { FeesProvider } from "./context/FeesContext";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
@@ -20,5 +21,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </AttendanceProvider>
       </StudentProvider>
     </AuthProvider>
+    <ToastContainer />
   </React.StrictMode>,
 );
