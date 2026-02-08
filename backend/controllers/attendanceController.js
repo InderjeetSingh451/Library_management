@@ -4,9 +4,7 @@ import Student from "../models/Student.js";
 /**
  * @desc    Mark Attendance (ENTRY / EXIT toggle)
  * @route   POST /api/attendance/mark
- * @access  Public (can keep protect if you want)
  */
-// controllers/attendanceController.js
 export const markAttendance = async (req, res, next) => {
   try {
     const { libraryId } = req.body;
@@ -34,14 +32,18 @@ export const markAttendance = async (req, res, next) => {
       date: today,
     });
 
-    // FIRST ENTRY OF THE DAY
-    if (!attendance) {
-      attendance = await Attendance.create({
-        student: student._id,
-        date: today,
-        status: "PRESENT",
-        logs: [{ type: "ENTRY", time: now }],
-      });
+    // 🔥 FIRST ENTRY (ABSENT → PRESENT)
+    if (!attendance || attendance.status === "ABSENT") {
+      if (!attendance) {
+        attendance = new Attendance({
+          student: student._id,
+          date: today,
+        });
+      }
+
+      attendance.status = "PRESENT";
+      attendance.logs = [{ type: "ENTRY", time: now }];
+      await attendance.save();
 
       return res.json({
         message: "Entry marked",
@@ -49,6 +51,8 @@ export const markAttendance = async (req, res, next) => {
         time: now,
       });
     }
+
+    // 🔁 ENTRY ↔ EXIT toggle
     const lastLog = attendance.logs[attendance.logs.length - 1];
     const nextType = lastLog.type === "ENTRY" ? "EXIT" : "ENTRY";
 
