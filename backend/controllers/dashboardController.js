@@ -3,7 +3,7 @@ import Attendance from "../models/Attendance.js";
 
 export const getDashboardStats = async (req, res, next) => {
   try {
-    const totalStudents = await Student.countDocuments({ isDeleted: false });
+    const totalStudents = await Student.countDocuments({});
 
     const today = new Date().toISOString().split("T")[0];
     const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -34,3 +34,4 @@ export const getDashboardStats = async (req, res, next) => {
     next(error);
   }
 };
+
