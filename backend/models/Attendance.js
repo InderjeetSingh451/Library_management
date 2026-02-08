@@ -23,16 +23,24 @@ const attendanceSchema = new mongoose.Schema(
       ref: "Student",
       required: true,
     },
+
     date: {
-      type: String, // YYYY-MM-DD
+      type: String, // YYYY-MM-DD (ENTRY date)
       required: true,
     },
+
     status: {
       type: String,
       enum: ["PRESENT", "ABSENT"],
-      default: "ABSENT",
+      default: "PRESENT",
     },
-    logs: [activitySchema], // 🔥 ENTRY / EXIT LOGS
+
+    openSession: {
+      type: Boolean,
+      default: true, // ENTRY done, EXIT pending
+    },
+
+    logs: [activitySchema],
   },
   { timestamps: true },
 );
