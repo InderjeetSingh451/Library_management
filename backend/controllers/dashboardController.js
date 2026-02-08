@@ -18,9 +18,13 @@ export const getDashboardStats = async (req, res, next) => {
       (a) => a.status === "ABSENT",
     ).length;
 
-    const activeStudents = await Attendance.distinct("student", {
-      createdAt: { $gte: last7Days },
-    });
+    const activeStudentIds = await Attendance.distinct("student", {
+  createdAt: { $gte: last7Days },
+});
+    const activeStudents = await Student.find({
+  _id: { $in: activeStudentIds },
+  isDeleted: false,
+}).select("_id");
 
     res.json({
       totalStudents,
@@ -34,4 +38,5 @@ export const getDashboardStats = async (req, res, next) => {
     next(error);
   }
 };
+
 
