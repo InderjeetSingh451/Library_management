@@ -16,6 +16,8 @@ const AddStudent = () => {
     category: "",
     address: "",
     monthlyFees: "",
+    email: "",
+    phone: "",
   });
 
   const [image, setImage] = useState(null);
@@ -28,7 +30,6 @@ const AddStudent = () => {
   const imageHandler = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
@@ -87,6 +88,7 @@ const AddStudent = () => {
             type="number"
             placeholder="Age"
             onChange={changeHandler}
+            required={false}
           />
           <Select
             label="Gender"
@@ -99,6 +101,20 @@ const AddStudent = () => {
             name="category"
             options={["GEN", "EWS", "OBC", "SC", "ST", "Other"]}
             onChange={changeHandler}
+          />
+          <Input
+            label="Phone Number"
+            name="phone"
+            type="number"
+            onChange={changeHandler}
+            required={false} // ❌ not mandatory
+          />
+          <Input
+            label="Mail ID"
+            name="email"
+            type="email"
+            onChange={changeHandler}
+            required={false} // ❌ not mandatory
           />
         </Section>
 
@@ -123,13 +139,12 @@ const AddStudent = () => {
           />
         </Section>
 
-        {/* Image Upload + Preview */}
+        {/* Image Upload */}
         <Section title="Student Photo">
           <div className="flex items-start gap-8">
-            {/* Upload */}
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-2">
-                Upload Image
+                Upload Image <span className="text-red-600">*</span>
               </label>
               <input
                 type="file"
@@ -141,7 +156,6 @@ const AddStudent = () => {
               />
             </div>
 
-            {/* Preview */}
             <div className="w-40">
               <p className="text-sm font-semibold mb-2">Preview</p>
               <div className="w-40 h-40 rounded-xl border bg-white flex items-center justify-center overflow-hidden shadow">
@@ -191,15 +205,25 @@ const Section = ({ title, children }) => (
   </div>
 );
 
-const Input = ({ label, name, type = "text", placeholder, onChange }) => (
+const Input = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  onChange,
+  required = true,
+}) => (
   <div>
-    <label className="block text-sm font-semibold mb-2">{label}</label>
+    <label className="block text-sm font-semibold mb-2">
+      {label}
+      {required && <span className="text-red-600 ml-1">*</span>}
+    </label>
     <input
       type={type}
       name={name}
       placeholder={placeholder}
       onChange={onChange}
-      required
+      required={required}
       className="w-full px-4 py-3 rounded-xl border
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
     />
@@ -208,7 +232,9 @@ const Input = ({ label, name, type = "text", placeholder, onChange }) => (
 
 const Select = ({ label, name, options, onChange }) => (
   <div>
-    <label className="block text-sm font-semibold mb-2">{label}</label>
+    <label className="block text-sm font-semibold mb-2">
+      {label} <span className="text-red-600">*</span>
+    </label>
     <select
       name={name}
       onChange={onChange}
@@ -216,9 +242,11 @@ const Select = ({ label, name, options, onChange }) => (
       className="w-full px-4 py-3 rounded-xl border
       focus:outline-none focus:ring-2 focus:ring-indigo-500"
     >
-      <option value="">Select {label}</option>
+      <option value="">Select</option>
       {options.map((o) => (
-        <option key={o}>{o}</option>
+        <option key={o} value={o}>
+          {o}
+        </option>
       ))}
     </select>
   </div>
@@ -226,7 +254,9 @@ const Select = ({ label, name, options, onChange }) => (
 
 const Textarea = ({ label, name, placeholder, onChange }) => (
   <div className="md:col-span-2 lg:col-span-3">
-    <label className="block text-sm font-semibold mb-2">{label}</label>
+    <label className="block text-sm font-semibold mb-2">
+      {label} <span className="text-red-600">*</span>
+    </label>
     <textarea
       name={name}
       rows={4}
