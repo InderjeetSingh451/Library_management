@@ -68,7 +68,11 @@ const Students = () => {
               </tr>
             ) : (
               filteredStudents.map((student) => (
-                <tr key={student._id} className="border-t hover:bg-gray-50">
+                <tr
+                  key={student._id}
+                  className="border-t hover:bg-gray-50 hover:cursor-pointer"
+                  onClick={() => navigate(`/students/${student._id}`)}
+                >
                   {/* Name */}
                   <td className="p-3 flex items-center gap-3">
                     <img
@@ -95,7 +99,7 @@ const Students = () => {
                   <td className="p-3 text-center">
                     <button
                       onClick={() => navigate(`/students/${student._id}`)}
-                      className="px-3 sm:px-4 py-1 text-sm rounded bg-black text-white hover:bg-gray-800"
+                      className="px-3 sm:px-4 py-1 text-sm rounded bg-black text-white hover:bg-gray-800 "
                     >
                       View
                     </button>
