@@ -1,17 +1,17 @@
+// controllers/attendanceController.js
 import Attendance from "../models/Attendance.js";
 import Student from "../models/Student.js";
 
+const getLocalDate = (date = new Date()) => date.toLocaleDateString("en-CA"); // YYYY-MM-DD (IST safe)
+
 /**
- * @desc    Mark Attendance (ENTRY / EXIT toggle)
- * @route   POST /api/attendance/mark
+ * POST /api/attendance/mark
  */
 export const markAttendance = async (req, res, next) => {
   try {
     const { libraryId } = req.body;
-
     if (!libraryId) {
-      res.status(400);
-      throw new Error("Library ID is required");
+      return res.status(400).json({ message: "Library ID required" });
     }
 
     const student = await Student.findOne({
@@ -20,30 +20,29 @@ export const markAttendance = async (req, res, next) => {
     });
 
     if (!student) {
-      res.status(404);
-      throw new Error("Invalid Library ID");
+      return res.status(404).json({ message: "Invalid Library ID" });
     }
 
-    const today = new Date().toISOString().split("T")[0];
     const now = new Date();
+    const today = getLocalDate(now);
 
-    let attendance = await Attendance.findOne({
+    // 🔍 Find last attendance record (latest activity)
+    const lastAttendance = await Attendance.findOne({
       student: student._id,
-      date: today,
-    });
+    }).sort({ createdAt: -1 });
 
-    // 🔥 FIRST ENTRY (ABSENT → PRESENT)
-    if (!attendance || attendance.status === "ABSENT") {
-      if (!attendance) {
-        attendance = new Attendance({
-          student: student._id,
-          date: today,
-        });
-      }
-
-      attendance.status = "PRESENT";
-      attendance.logs = [{ type: "ENTRY", time: now }];
-      await attendance.save();
+    // ================= ENTRY =================
+    // Allowed only if:
+    // - No previous attendance
+    // - OR last attendance session is CLOSED
+    if (!lastAttendance || lastAttendance.openSession === false) {
+      const attendance = await Attendance.create({
+        student: student._id,
+        date: today, // ENTRY date
+        status: "PRESENT",
+        openSession: true,
+        logs: [{ type: "ENTRY", time: now }],
+      });
 
       return res.json({
         message: "Entry marked",
@@ -52,20 +51,19 @@ export const markAttendance = async (req, res, next) => {
       });
     }
 
-    // 🔁 ENTRY ↔ EXIT toggle
-    const lastLog = attendance.logs[attendance.logs.length - 1];
-    const nextType = lastLog.type === "ENTRY" ? "EXIT" : "ENTRY";
-
-    attendance.logs.push({
-      type: nextType,
+    // ================= EXIT =================
+    // Allowed only if last session is OPEN
+    lastAttendance.logs.push({
+      type: "EXIT",
       time: now,
     });
 
-    await attendance.save();
+    lastAttendance.openSession = false;
+    await lastAttendance.save();
 
-    res.json({
-      message: `${nextType} marked`,
-      type: nextType,
+    return res.json({
+      message: "Exit marked",
+      type: "EXIT",
       time: now,
     });
   } catch (error) {
