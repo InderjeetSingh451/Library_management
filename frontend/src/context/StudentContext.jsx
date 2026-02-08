@@ -7,6 +7,7 @@ export const StudentProvider = ({ children }) => {
   const { authAxios } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [save, setSave] = useState(false);
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -80,6 +81,8 @@ export const StudentProvider = ({ children }) => {
         deleteStudent,
         addStudent,
         updateStudent,
+        save,
+        setSave,
       }}
     >
       {children}
