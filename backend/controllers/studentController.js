@@ -2,7 +2,6 @@ import Student from "../models/Student.js";
 import Attendance from "../models/Attendance.js";
 import cloudinary from "../config/cloudinary.js";
 import generateLibraryId from "../utils/generateLibraryId.js";
-
 /**
  * @desc    Add New Student
  * @route   POST /api/students
@@ -19,13 +18,13 @@ export const addStudent = async (req, res, next) => {
       category,
       address,
       monthlyFees,
+      email,
+      phone,
     } = req.body;
-
     if (!req.file) {
       res.status(400);
       throw new Error("Student image is required");
     }
-
     if (
       !name ||
       !fatherName ||
@@ -39,39 +38,33 @@ export const addStudent = async (req, res, next) => {
       res.status(400);
       throw new Error("All fields are required");
     }
-
     // Upload image
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "library_students",
     });
-
     // Generate unique Library ID
     let libraryId;
     let exists = true;
-
     while (exists) {
       libraryId = generateLibraryId();
       exists = await Student.findOne({ libraryId });
     }
-
     // Generate fees history from enrolled month
     const enrolledDate = new Date();
     const feesHistory = [];
-
     const startMonth = enrolledDate.getMonth();
     const startYear = enrolledDate.getFullYear();
-
     const monthName = enrolledDate.toLocaleString("default", {
       month: "long",
     });
-
     feesHistory.push({
       month: `${monthName} ${startYear}`,
       amount: monthlyFees,
       status: "UNPAID",
     });
-
     const student = await Student.create({
+      email,
+      phone,
       name,
       fatherName,
       dob,
@@ -88,7 +81,6 @@ export const addStudent = async (req, res, next) => {
       feesHistory,
       enrolledDate,
     });
-
     res.status(201).json(student);
   } catch (error) {
     next(error);
@@ -105,7 +97,6 @@ export const getStudents = async (req, res, next) => {
     const students = await Student.find({ isDeleted: false }).sort({
       createdAt: -1,
     });
-
     res.json(students);
   } catch (error) {
     next(error);
@@ -120,22 +111,76 @@ export const getStudents = async (req, res, next) => {
 export const getStudentById = async (req, res, next) => {
   try {
     const student = await Student.findById(req.params.id);
-
     if (!student || student.isDeleted) {
       res.status(404);
       throw new Error("Student not found");
     }
-
     const attendance = await Attendance.find({
       student: student._id,
     });
-
     res.json({ student, attendance });
   } catch (error) {
     next(error);
   }
 };
+/**
+ * @desc    Update Student (LibraryID not editable)
+ * @route   PUT /api/students/:id
+ * @access  Admin
+ */
+export const updateStudent = async (req, res, next) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student || student.isDeleted) {
+      res.status(404);
+      throw new Error("Student not found");
+    }
+    const {
+      name,
+      fatherName,
+      dob,
+      age,
+      gender,
+      category,
+      address,
+      monthlyFees,
+      email,
+      phone,
+    } = req.body;
 
+    //libraryId is intentionally NOT taken from req.body
+
+    student.name = name ?? student.name;
+    student.fatherName = fatherName ?? student.fatherName;
+    student.dob = dob ?? student.dob;
+    student.age = age ?? student.age;
+    student.gender = gender ?? student.gender;
+    student.category = category ?? student.category;
+    student.address = address ?? student.address;
+    student.monthlyFees = monthlyFees ?? student.monthlyFees;
+    student.email = email ?? "";
+    student.phone = phone ?? "";
+
+    // Optional image update
+    if (req.file) {
+      // delete old image
+      if (student.image?.public_id) {
+        await cloudinary.uploader.destroy(student.image.public_id);
+      }
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "library_students",
+      });
+      student.image = {
+        public_id: result.public_id,
+        url: result.secure_url,
+      };
+    }
+    await student.save();
+    res.json(student);
+  } catch (error) {
+    next(error);
+  }
+};
 /**
  * @desc    Soft Delete Student
  * @route   DELETE /api/students/:id
