@@ -4,6 +4,7 @@ import {
   getStudents,
   getStudentById,
   deleteStudent,
+  updateStudent,
 } from "../controllers/studentController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
@@ -18,6 +19,7 @@ studentRoutes
 studentRoutes
   .route("/:id")
   .get(protect, getStudentById)
+  .put(protect, upload.single("image"), updateStudent)
   .delete(protect, deleteStudent);
 
 export default studentRoutes;
