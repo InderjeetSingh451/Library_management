@@ -3,6 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useStudents } from "../context/StudentContext";
 import Loader from "../components/Loader";
 
+/* ================= AGE CALCULATOR ================= */
+const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const StudentProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -26,8 +40,7 @@ const StudentProfile = () => {
   if (!data) return <Loader />;
 
   const { student, attendance } = data;
-  // console.log(student);
-  // console.log(attendance);
+
   const enrolledDate = new Date(student.createdAt).toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -36,8 +49,26 @@ const StudentProfile = () => {
     minute: "2-digit",
   });
 
+  /* ================= CHANGE HANDLER ================= */
   const changeHandler = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "dob") {
+      const age = calculateAge(value);
+
+      if (age < 3) {
+        alert("Student must be at least 3 years old");
+        return;
+      }
+
+      setForm({
+        ...form,
+        dob: value,
+        age,
+      });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const imageHandler = (e) => {
@@ -54,6 +85,8 @@ const StudentProfile = () => {
     formData.append("email", form.email);
     formData.append("phone", form.phone);
     formData.append("monthlyFees", form.monthlyFees);
+    formData.append("dob", form.dob);
+    formData.append("age", form.age);
     if (image) formData.append("image", image);
 
     await updateStudent(student._id, formData);
@@ -70,108 +103,96 @@ const StudentProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      {/* PROFILE */}
-      <div className="bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row gap-6">
+      {/* ================= PROFILE ================= */}
+      <div className="bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row gap-6  ">
         {/* IMAGE */}
-        <div>
-          <img
-            src={image ? URL.createObjectURL(image) : student.image?.url}
-            alt={student.name}
-            className="w-40 h-40 object-cover rounded-lg border"
-          />
+        <div className="flex-shrink-0">
+          <div className="w-40 h-40 rounded-lg overflow-hidden border-2 border-blue-200">
+            <img
+              src={image ? URL.createObjectURL(image) : student.image?.url}
+              alt={student.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
           {edit && (
             <input
               type="file"
               onChange={imageHandler}
-              className="mt-3 text-sm"
+              className="mt-2 text-xs"
             />
           )}
         </div>
+
         {/* DETAILS */}
         <div className="flex-1">
+          {/* NAME */}
           {!edit ? (
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {student.name}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">{student.name}</h1>
           ) : (
             <input
               name="name"
               value={form.name}
               onChange={changeHandler}
-              className="text-2xl font-bold border p-2 rounded w-full"
+              className="text-xl font-bold border p-2 rounded w-full"
             />
           )}
 
-          <p className="text-sm text-gray-500 mb-4">
-            Enrolled on:{" "}
+          <p className="text-xs text-gray-500 mb-4">
+            Enrolled on{" "}
             <span className="font-medium text-gray-700">{enrolledDate}</span>
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            {/* Father */}
-            <div>
-              <span className="font-semibold">Father Name:</span>
-              {edit ? (
-                <input
-                  name="fatherName"
-                  value={form.fatherName}
-                  onChange={changeHandler}
-                  className="border p-1 rounded w-full"
-                />
-              ) : (
-                <span> {student.fatherName}</span>
-              )}
-            </div>
-            <div>
-              <span className="font-semibold">Email:</span>
-              {edit ? (
-                <input
-                  name="email"
-                  value={form.email}
-                  onChange={changeHandler}
-                  className="border p-1 rounded w-full"
-                />
-              ) : (
-                <span> {student.email === "" ? "N/A" : student.email}</span>
-              )}
-            </div>
-            <div>
-              <span className="font-semibold">Phone:</span>
-              {edit ? (
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={changeHandler}
-                  className="border p-1 rounded w-full"
-                />
-              ) : (
-                <span> {student.phone === "" ? "N/A" : student.phone}</span>
-              )}
-            </div>
-            <div>
-              <span className="font-semibold">DOB:</span>
-              {edit ? (
-                <input
-                  name="dob"
-                  value={form.dob}
-                  type="date"
-                  onChange={changeHandler}
-                  className="border p-1 rounded w-full"
-                />
-              ) : (
-                <span> {student.dob.slice(0, 10)}</span>
-              )}
-            </div>
-            {/* Library ID (LOCKED) */}
-            <p>
-              <span className="font-semibold">Library ID:</span>{" "}
-              {student.libraryId}
-            </p>
+          {/* INFO GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <InfoRow label="Father Name" value={student.fatherName} edit={edit}>
+              <input
+                name="fatherName"
+                value={form.fatherName}
+                onChange={changeHandler}
+                className="border p-1 rounded w-full"
+              />
+            </InfoRow>
 
-            {/* Gender */}
+            <InfoRow label="Email" value={student.email || "N/A"} edit={edit}>
+              <input
+                name="email"
+                value={form.email}
+                onChange={changeHandler}
+                className="border p-1 rounded w-full"
+              />
+            </InfoRow>
+
+            <InfoRow label="Phone" value={student.phone || "N/A"} edit={edit}>
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={changeHandler}
+                className="border p-1 rounded w-full"
+              />
+            </InfoRow>
+
+            <InfoRow label="DOB" value={student.dob?.slice(0, 10)} edit={edit}>
+              <input
+                name="dob"
+                type="date"
+                value={form.dob}
+                max={
+                  new Date(new Date().setFullYear(new Date().getFullYear() - 3))
+                    .toISOString()
+                    .split("T")[0]
+                }
+                onChange={changeHandler}
+                className="border p-1 rounded w-full"
+              />
+            </InfoRow>
+
+            <InfoRow label="Age" value={student.age} />
+
+            <InfoRow label="Library ID" value={student.libraryId} />
+
             <div>
-              <span className="font-semibold">Gender:</span>
+              <p className="text-xs text-gray-500">Gender</p>
               {edit ? (
                 <select
                   name="gender"
@@ -184,13 +205,14 @@ const StudentProfile = () => {
                   <option>Other</option>
                 </select>
               ) : (
-                <span> {student.gender}</span>
+                <span className="inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                  {student.gender}
+                </span>
               )}
             </div>
 
-            {/* Category */}
             <div>
-              <span className="font-semibold">Category:</span>
+              <p className="text-xs text-gray-500">Category</p>
               {edit ? (
                 <select
                   name="category"
@@ -206,11 +228,14 @@ const StudentProfile = () => {
                   <option>Other</option>
                 </select>
               ) : (
-                <span> {student.category}</span>
+                <span className="inline-block px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+                  {student.category}
+                </span>
               )}
             </div>
+
             <div>
-              <span className="font-bold">Fees: </span>
+              <p className="text-xs text-gray-500">Fees</p>
               {edit ? (
                 <input
                   name="monthlyFees"
@@ -220,31 +245,30 @@ const StudentProfile = () => {
                   className="border p-1 rounded w-full"
                 />
               ) : (
-                <span className="font-semibold">{student.monthlyFees} INR</span>
+                <span className="font-semibold text-green-700">
+                  ₹ {student.monthlyFees}
+                </span>
               )}
             </div>
-            {/* Address */}
+
             <div className="sm:col-span-2">
-              <span className="font-semibold">Address:</span>
-              {edit ? (
+              <InfoRow label="Address" value={student.address} edit={edit}>
                 <textarea
                   name="address"
                   value={form.address}
                   onChange={changeHandler}
-                  className="border p-2 rounded w-full"
+                  className="border p-1 rounded w-full"
                 />
-              ) : (
-                <span> {student.address}</span>
-              )}
+              </InfoRow>
             </div>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="mt-6 flex gap-3">
+          {/* ACTIONS */}
+          <div className="mt-4 flex gap-3">
             {!edit ? (
               <button
                 onClick={() => setEdit(true)}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg"
+                className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-700"
               >
                 Edit
               </button>
@@ -252,13 +276,13 @@ const StudentProfile = () => {
               <>
                 <button
                   onClick={saveHandler}
-                  className="bg-green-600 text-white px-5 py-2 rounded-lg"
+                  className="bg-green-600 text-white px-4 py-1.5 rounded-md text-sm"
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setEdit(false)}
-                  className="bg-gray-300 px-5 py-2 rounded-lg"
+                  className="bg-gray-200 px-4 py-1.5 rounded-md text-sm"
                 >
                   Cancel
                 </button>
@@ -279,21 +303,19 @@ const StudentProfile = () => {
 
             return (
               <div key={day._id} className="border rounded-lg overflow-hidden">
-                {/* DATE BOX */}
                 <button
                   onClick={() => setOpenDay(isOpen ? null : day._id)}
-                  className={`w-full flex justify-between items-center px-4 py-3 text-sm font-semibold transition
+                  className={`w-full flex justify-between items-center px-4 py-3 text-sm font-semibold
                     ${
                       isPresent
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : "bg-red-100 text-red-800 hover:bg-red-200"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                 >
                   <span>{day.date}</span>
                   <span>{isOpen ? "▲" : "▼"}</span>
                 </button>
 
-                {/* ACTIVITY (EXPAND) */}
                 {isOpen && (
                   <div className="p-4 bg-gray-50">
                     {day.logs.length === 0 ? (
@@ -343,7 +365,6 @@ const StudentProfile = () => {
         </button>
       </div>
 
-      {/* DELETE MODAL */}
       {showDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-96">
@@ -372,6 +393,10 @@ const StudentProfile = () => {
     </div>
   );
 };
-
+const InfoRow = ({ label, value, edit = false, children }) => (
+  <div>
+    <p className="text-xs text-gray-500">{label}</p>
+    {edit ? children : <p className="font-medium text-gray-800">{value}</p>}
+  </div>
+);
 export default StudentProfile;
-
