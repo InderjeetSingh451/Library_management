@@ -46,7 +46,7 @@ export const markAttendance = async (req, res, next) => {
       attendance.logs.push({ type: "ENTRY", time: now });
       await attendance.save();
 
-      return res.json({ type: "ENTRY", time: now });
+      return res.json({ type: "ENTRY", time: now ,name: student.name});
     }
 
     // EXIT
@@ -54,8 +54,9 @@ export const markAttendance = async (req, res, next) => {
     attendance.openSession = false;
     await attendance.save();
 
-    return res.json({ type: "EXIT", time: now });
+    return res.json({ type: "EXIT", time: now,name: student.name });
   } catch (err) {
     next(err);
   }
 };
+
