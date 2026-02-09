@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "./AuthContext";
-
+import { showAttendancePop } from "../components/attendancePop";
 const AttendanceContext = createContext();
 
 export const AttendanceProvider = ({ children }) => {
@@ -20,7 +20,7 @@ export const AttendanceProvider = ({ children }) => {
 
     try {
       setLoading(true);
-      
+
       const { data } = await authAxios.post("/api/attendance/mark", {
         libraryId,
       });
@@ -34,14 +34,25 @@ export const AttendanceProvider = ({ children }) => {
           minute: "2-digit",
         });
 
-        toast.success(`${data.type} marked at ${formattedTime}`);
+        showAttendancePop({
+          type: data.type,
+          name: data.name || "Student",
+          time: formattedTime,
+        });
       } else {
         toast.success(data?.message || "Attendance marked");
       }
 
       return data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to mark attendance");
+      const message =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+
+      showAttendancePop({
+        message,
+      });
+
       return null;
     } finally {
       setLoading(false);
