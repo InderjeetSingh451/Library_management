@@ -19,6 +19,9 @@ app.use((req,res,next)=>{
   console.log("Request come : ", req.path);
   next();
 });
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
@@ -30,4 +33,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
 
