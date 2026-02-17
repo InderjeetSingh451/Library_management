@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useStudents } from "../context/StudentContext";
 import Loader from "../components/Loader";
 
-/* ================= DATE HELPERS (TIMEZONE SAFE) ================= */
+/* ================= DATE HELPERS ================= */
 const toLocalDateKey = (date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -21,17 +21,21 @@ const calculateAge = (dob) => {
   return age;
 };
 
-/* ================= LAST 3 MONTH RANGE (EXACT) ================= */
+/* ================= LAST 3 MONTH RANGE ================= */
 const getLast3MonthsRange = (attendance) => {
   if (!attendance.length) return null;
 
   const dates = attendance.map((a) => new Date(a.date));
   const latest = new Date(Math.max(...dates));
-
   const start = new Date(latest);
-  start.setMonth(start.getMonth() - 2); // ✅ EXACT 3 MONTHS
+  start.setMonth(start.getMonth() - 2); // EXACT 3 MONTHS
 
   return { start, end: latest };
+};
+
+const formatDateOnly = (date) => {
+  if (!date) return "—";
+  return date.split("T")[0];
 };
 
 const StudentProfile = () => {
@@ -45,7 +49,7 @@ const StudentProfile = () => {
   const [form, setForm] = useState({});
   const [image, setImage] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     (async () => {
       const res = await getStudentById(id);
@@ -69,6 +73,7 @@ const StudentProfile = () => {
   /* ================= HANDLERS ================= */
   const changeHandler = (e) => {
     const { name, value } = e.target;
+
     if (name === "dob") {
       const age = calculateAge(value);
       if (age < 3) return alert("Student must be at least 3 years old");
@@ -81,11 +86,21 @@ const StudentProfile = () => {
   const imageHandler = (e) => setImage(e.target.files[0]);
 
   const saveHandler = async () => {
+    setLoading(true);
     const formData = new FormData();
-    Object.keys(form).forEach((k) => formData.append(k, form[k]));
+
+    // ❗ DO NOT send libraryId
+    Object.keys(form).forEach((key) => {
+      if (key !== "libraryId") {
+        formData.append(key, form[key]);
+      }
+    });
+
     if (image) formData.append("image", image);
+
     await updateStudent(student._id, formData);
     setEdit(false);
+    setLoading(false);
     setData(await getStudentById(id));
   };
 
@@ -98,6 +113,7 @@ const StudentProfile = () => {
     <div className="min-h-screen bg-gray-50 p-8">
       {/* ================= PROFILE ================= */}
       <div className="bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row gap-6">
+        {/* IMAGE */}
         <div>
           <div className="w-40 h-40 rounded-lg overflow-hidden border">
             <img
@@ -115,16 +131,17 @@ const StudentProfile = () => {
           )}
         </div>
 
+        {/* DETAILS */}
         <div className="flex-1">
-          {!edit ? (
-            <h1 className="text-2xl font-bold">{student.name}</h1>
-          ) : (
+          {edit ? (
             <input
               name="name"
               value={form.name}
               onChange={changeHandler}
-              className="border p-2 w-full"
+              className="border p-2 w-full font-bold text-xl"
             />
+          ) : (
+            <h1 className="text-2xl font-bold">{student.name}</h1>
           )}
 
           <p className="text-xs text-gray-500 mb-4">
@@ -132,14 +149,82 @@ const StudentProfile = () => {
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4 text-sm">
-            <InfoRow label="Father Name" value={student.fatherName} />
-            <InfoRow label="Phone" value={student.phone} />
-            <InfoRow label="DOB" value={student.dob?.slice(0, 10)} />
-            <InfoRow label="Age" value={student.age} />
-            <InfoRow label="Library ID" value={student.libraryId} />
+            <EditableField
+              label="Father Name"
+              name="fatherName"
+              value={form.fatherName}
+              edit={edit}
+              onChange={changeHandler}
+            />
+            <EditableField
+              label="Email"
+              name="email"
+              value={form.email}
+              edit={edit}
+              onChange={changeHandler}
+            />
+            <EditableField
+              label="Phone"
+              name="phone"
+              value={form.phone}
+              edit={edit}
+              onChange={changeHandler}
+            />
+            <EditableField
+              label="DOB"
+              name="dob"
+              type="date"
+              value={edit ? form.dob : formatDateOnly(form.dob)}
+              edit={edit}
+              onChange={changeHandler}
+            />
+            <EditableField label="Age" value={student.age} />
+            {/* 🔒 ONLY NON-EDITABLE FIELD */}
+            <EditableField
+              label="Library ID"
+              value={student.libraryId}
+              locked
+            />
+
+            <EditableSelect
+              label="Gender"
+              name="gender"
+              value={form.gender}
+              edit={edit}
+              onChange={changeHandler}
+              options={["Male", "Female", "Other"]}
+            />
+
+            <EditableSelect
+              label="Category"
+              name="category"
+              value={form.category}
+              edit={edit}
+              onChange={changeHandler}
+              options={["GEN", "EWS", "OBC", "SC", "ST", "Other"]}
+            />
+
+            <EditableField
+              label="Fees"
+              name="monthlyFees"
+              type="number"
+              value={form.monthlyFees}
+              edit={edit}
+              onChange={changeHandler}
+            />
+
+            <div className="sm:col-span-2">
+              <EditableTextarea
+                label="Address"
+                name="address"
+                value={form.address}
+                edit={edit}
+                onChange={changeHandler}
+              />
+            </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex gap-3">
             {!edit ? (
               <button
                 onClick={() => setEdit(true)}
@@ -151,9 +236,9 @@ const StudentProfile = () => {
               <>
                 <button
                   onClick={saveHandler}
-                  className="bg-green-600 text-white px-4 py-1.5 rounded mr-2"
+                  className="bg-green-600 text-white px-4 py-1.5 rounded"
                 >
-                  Save
+                  {loading ? "Saving.." : "Save"}
                 </button>
                 <button
                   onClick={() => setEdit(false)}
@@ -167,26 +252,30 @@ const StudentProfile = () => {
         </div>
       </div>
 
-      {/* ================= ATTENDANCE CALENDAR ================= */}
+      {/* ================= ATTENDANCE ================= */}
       <div className="bg-white rounded-xl shadow-md p-6 mt-8">
         <h2 className="text-xl font-semibold mb-6">Attendance History</h2>
         <AttendanceCalendar attendance={attendance} onSelect={setSelectedDay} />
       </div>
 
-      {/* ================= DELETE ================= */}
-      <div className="mt-8">
+      <AttendanceModal day={selectedDay} onClose={() => setSelectedDay(null)} />
+      {/* ================= DELETE STUDENT ================= */}
+      <div className="mt-10 flex justify-center">
         <button
           onClick={() => setShowDelete(true)}
-          className="bg-red-600 text-white px-6 py-2 rounded"
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-medium"
         >
           Delete Student
         </button>
       </div>
-
       {showDelete && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded w-96">
-            <h3 className="font-semibold mb-4">Are you sure?</h3>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-96">
+            <h3 className="text-lg font-semibold mb-3">Delete Student</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This action cannot be undone.
+            </p>
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDelete(false)}
@@ -198,19 +287,83 @@ const StudentProfile = () => {
                 onClick={deleteHandler}
                 className="px-4 py-2 bg-red-600 text-white rounded"
               >
-                Delete
+                Yes, Delete
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <AttendanceModal day={selectedDay} onClose={() => setSelectedDay(null)} />
     </div>
   );
 };
 
-/* ================= CALENDAR ================= */
+/* ================= REUSABLE FIELDS ================= */
+
+const EditableField = ({
+  label,
+  name,
+  value,
+  edit,
+  onChange,
+  type = "text",
+  locked = false,
+}) => (
+  <div>
+    <p className="text-xs text-gray-500">{label}</p>
+    {locked || !edit ? (
+      <p className={`font-medium ${locked ? "text-gray-600" : ""}`}>
+        {value || "—"}
+      </p>
+    ) : (
+      <input
+        name={name}
+        type={type}
+        value={value || ""}
+        onChange={onChange}
+        className="border p-1 rounded w-full"
+      />
+    )}
+  </div>
+);
+
+const EditableSelect = ({ label, name, value, edit, onChange, options }) => (
+  <div>
+    <p className="text-xs text-gray-500">{label}</p>
+    {edit ? (
+      <select
+        name={name}
+        value={value || ""}
+        onChange={onChange}
+        className="border p-1 rounded w-full"
+      >
+        {options.map((o) => (
+          <option key={o}>{o}</option>
+        ))}
+      </select>
+    ) : (
+      <p className="font-medium">{value || "—"}</p>
+    )}
+  </div>
+);
+
+const EditableTextarea = ({ label, name, value, edit, onChange }) => (
+  <div>
+    <p className="text-xs text-gray-500">{label}</p>
+    {edit ? (
+      <textarea
+        name={name}
+        value={value || ""}
+        onChange={onChange}
+        className="border p-1 rounded w-full"
+      />
+    ) : (
+      <p className="font-medium">{value || "—"}</p>
+    )}
+  </div>
+);
+
+/* ================= CALENDAR & MODAL (UNCHANGED) ================= */
+
 const AttendanceCalendar = ({ attendance, onSelect }) => {
   const today = new Date();
   const range = getLast3MonthsRange(attendance);
@@ -218,8 +371,7 @@ const AttendanceCalendar = ({ attendance, onSelect }) => {
 
   const map = {};
   attendance.forEach((a) => {
-    const key = toLocalDateKey(new Date(a.date));
-    map[key] = a;
+    map[toLocalDateKey(new Date(a.date))] = a;
   });
 
   const months = [];
@@ -268,7 +420,7 @@ const AttendanceCalendar = ({ attendance, onSelect }) => {
                     disabled={disabled}
                     onClick={() => onSelect(record)}
                     className={`h-8 rounded
-                      ${record?.status === "PRESENT" ? "bg-green-200" : record?.status === "ABSENT" ? "bg-red-200" : "bg-gray-100"}
+                      ${record?.status === "PRESENT" ? "bg-green-300" : record?.status === "ABSENT" ? "bg-red-300" : "bg-gray-200"}
                       ${disabled ? "opacity-40" : "hover:ring-2"}
                     `}
                   >
@@ -284,7 +436,6 @@ const AttendanceCalendar = ({ attendance, onSelect }) => {
   );
 };
 
-/* ================= MODAL ================= */
 const AttendanceModal = ({ day, onClose }) => {
   if (!day) return null;
 
@@ -331,13 +482,5 @@ const AttendanceModal = ({ day, onClose }) => {
     </div>
   );
 };
-
-/* ================= INFO ROW ================= */
-const InfoRow = ({ label, value }) => (
-  <div>
-    <p className="text-xs text-gray-500">{label}</p>
-    <p className="font-medium">{value}</p>
-  </div>
-);
 
 export default StudentProfile;
