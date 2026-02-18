@@ -12,7 +12,7 @@ const Login = () => {
     e.preventDefault();
     try {
       login(email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.log(error);
     }
@@ -100,3 +100,4 @@ const Login = () => {
 };
 
 export default Login;
+
