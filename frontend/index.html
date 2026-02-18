@@ -1,47 +1,80 @@
 <!doctype html>
 <html lang="en">
   <head>
-  <meta
-    name="google-site-verification"
-    content="YjgR3JB7Vrkbq5UzePKdY13lkndgzvug_3-2utBFHbc"
-  />
+    <!-- ================= BASIC ================= -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ================= GOOGLE VERIFICATION ================= -->
+    <meta
+      name="google-site-verification"
+      content="YjgR3JB7Vrkbq5UzePKdY13lkndgzvug_3-2utBFHbc"
+    />
 
-  <title>
-    Dr. Bhim Rao Ambedkar Pustkalaya | Library in Sirsa, Begu Road
-  </title>
+    <!-- ================= TITLE ================= -->
+    <title>Dr. Bhim Rao Ambedkar Library | Library in Sirsa, Begu Road</title>
 
-  <meta
-    name="description"
-    content="Dr. Bhim Rao Ambedkar Pustkalaya is a public study library in Sirsa near Begu Road. Peaceful environment for students, competitive exam preparation, and reading."
-  />
+    <!-- ================= SEO META ================= -->
+    <meta
+      name="description"
+      content="Dr. Bhim Rao Ambedkar Pustkalaya is a peaceful public study library near Paper Mill, Begu Road, Sirsa. Ideal for students preparing for exams with a calm study environment."
+    />
 
-  <meta
-    name="keywords"
-    content="library in sirsa, ambedkar library sirsa, dr bhim rao ambedkar pustkalaya, study library sirsa, reading library sirsa, library near begu road"
-  />
+    <meta
+      name="keywords"
+      content="library in sirsa, ambedkar library sirsa, dr bhim rao ambedkar pustkalaya, study library sirsa, library near begu road, reading library sirsa"
+    />
 
-  <!-- Icons -->
-  <link rel="icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#ffffff" />
 
-  <meta name="theme-color" content="#ffffff" />
-</head>
+    <!-- ================= FAVICONS ================= -->
+    <link rel="icon" href="/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-icon-180x180.png"
+    />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ================= STRUCTURED DATA (MOST IMPORTANT) ================= -->
+    <!-- This tells Google your REAL site name (removes "Render") -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Library",
+        "name": "Dr. Bhim Rao Ambedkar Pustkalaya",
+        "url": "https://dr-bhim-rao-ambedkar-library.onrender.com",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Near Paper Mill, Begu Road",
+          "addressLocality": "Sirsa",
+          "addressRegion": "Haryana",
+          "addressCountry": "IN"
+        }
+      }
+    </script>
+  </head>
+
   <body>
+    <!-- ================= REACT ROOT ================= -->
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WEYM8NMPKT"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-WEYM8NMPKT');
-</script>
+    <!-- ================= REACT ENTRY ================= -->
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- ================= GOOGLE ANALYTICS ================= -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-WEYM8NMPKT"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-WEYM8NMPKT");
+    </script>
   </body>
 </html>
