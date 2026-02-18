@@ -125,6 +125,32 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ================= LIVE MAP LOCATION ================= */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <h3 className="text-3xl font-bold text-center mb-4 text-[#4b2e2e]">
+            Find Us on Map
+          </h3>
+
+          <p className="text-center text-gray-600 mb-10">
+            📍 Near Paper Mill, Begu Road, Sirsa
+          </p>
+
+          <div className="rounded-2xl overflow-hidden shadow-lg border">
+            <iframe
+              title="Dr. Bhim Rao Ambedkar Library Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1650.0680760156129!2d75.0320641374515!3d29.518572600000013!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39114db915591c39%3A0x627dee8c901c7156!2z4KSh4KWJLiDgpIXgpK7gpY3gpKzgpYfgpKHgpJXgpLAg4KSq4KWB4KS44KWN4KSk4KSV4KS-4KSy4KSv!5e1!3m2!1sen!2sin!4v1771440843420!5m2!1sen!2sin"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
       {/* ================= CTA ================= */}
       <section className="py-20 bg-[#4b2e2e] text-white text-center">
         <h3 className="text-3xl font-bold mb-4">
