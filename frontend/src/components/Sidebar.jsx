@@ -9,7 +9,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   const linkClass = ({ isActive }) =>
@@ -49,7 +49,11 @@ const Sidebar = () => {
         <h2 className="text-xl font-bold mb-6 text-center">Library Admin</h2>
 
         <nav className="space-y-2">
-          <NavLink to="/" onClick={() => setOpen(false)} className={linkClass}>
+          <NavLink
+            to="/dashboard"
+            onClick={() => setOpen(false)}
+            className={linkClass}
+          >
             Dashboard
           </NavLink>
           <NavLink
