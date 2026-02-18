@@ -9,6 +9,9 @@ import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
+import { useContext } from "react";
+import { useAuth } from "./context/AuthContext";
+import Home from "./pages/Home";
 
 const Layout = ({ children }) => (
   <div className="flex grid-cols-2 min-h-screen bg-gray-100">
@@ -23,9 +26,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
+        <Route path="/" element={<Home />} />
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Layout>
