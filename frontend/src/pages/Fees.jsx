@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { useFees } from "../context/FeesContext";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
+import {
+  Search,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  ArrowUpRight,
+} from "lucide-react";
 
 const Fees = () => {
   const { feesStudents, fetchFees, toggleFeeStatus, loading } = useFees();
@@ -14,158 +21,186 @@ const Fees = () => {
   }, [filter]);
 
   const filteredFeesStudents = search
-    ? feesStudents.filter((s) =>
-        s.libraryId.toLowerCase().includes(search.toLowerCase()),
+    ? feesStudents.filter(
+        (s) =>
+          s.libraryId.toLowerCase().includes(search.toLowerCase()) ||
+          s.name.toLowerCase().includes(search.toLowerCase()),
       )
     : feesStudents;
 
-  // console.log(filteredFeesStudents);
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div className="min-h-screen p-6 md:p-10 bg-white">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+      <div className="mb-10">
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
           Fees Management
         </h1>
-        <p className="text-sm text-gray-500">
-          Track and update monthly fees status of each student
+        <p className="text-gray-500 mt-1 font-medium">
+          Track revenue and manage monthly student subscriptions
         </p>
       </div>
 
-      {/* Filters + Search */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <div className="flex gap-2">
-          <FilterButton active={filter === ""} onClick={() => setFilter("")}>
+      {/* Filters & Search */}
+      <div className="mb-8 flex flex-col lg:flex-row gap-6 lg:items-center justify-between">
+        <div className="flex p-1 bg-gray-100 rounded-2xl w-fit">
+          <TabButton active={filter === ""} onClick={() => setFilter("")}>
             All
-          </FilterButton>
-          <FilterButton
+          </TabButton>
+          <TabButton
             active={filter === "PAID"}
             onClick={() => setFilter("PAID")}
           >
             Paid
-          </FilterButton>
-          <FilterButton
+          </TabButton>
+          <TabButton
             active={filter === "UNPAID"}
             onClick={() => setFilter("UNPAID")}
           >
             Pending
-          </FilterButton>
+          </TabButton>
         </div>
 
-        <input
-          type="text"
-          placeholder="Search by Library ID"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-72 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-black"
-        />
+        <div className="relative w-full lg:w-96">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search student ID..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none transition-all shadow-sm"
+          />
+        </div>
       </div>
 
-      {/* ================= MOBILE CARDS ================= */}
-      <div className="space-y-4 sm:hidden">
-        {filteredFeesStudents.length === 0 ? (
-          <p className="text-center text-gray-500">No fee records found</p>
-        ) : (
-          filteredFeesStudents.map((student) => (
-            <div
-              key={student._id}
-              className="border rounded-xl p-4 bg-white shadow-sm"
-            >
-              {/* Row 1 */}
-              <div className="flex justify-between text-sm font-medium">
-                <span>Name: {student.name}</span>
-                <span className="font-mono">{student.libraryId}</span>
+      {/* Mobile Grid */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {filteredFeesStudents.map((student) => (
+          <div
+            key={student._id}
+            className="bg-gray-50 border border-gray-100 rounded-3xl p-6 shadow-sm"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={student.image?.url}
+                className="w-12 h-12 rounded-xl object-cover"
+              />
+              <div>
+                <h3 className="font-bold text-gray-900">{student.name}</h3>
+                <p className="text-xs font-mono text-gray-500">
+                  {student.libraryId}
+                </p>
               </div>
+            </div>
 
-              {/* Row 2 */}
-              <div className="mt-3 flex justify-between items-center">
-                <span className="font-semibold">
-                  Fees: ₹{student.monthlyFees}
-                </span>
+            <div className="flex items-center justify-between p-3 bg-white rounded-2xl border border-gray-100 mb-4">
+              <span className="text-sm font-medium text-gray-500">
+                Monthly Fee
+              </span>
+              <span className="font-bold text-gray-900">
+                ₹{student.monthlyFees}
+              </span>
+            </div>
 
-                {student.feesHistory.map((fee) => (
-                  <button
-                    key={fee.month}
-                    onClick={() => toggleFeeStatus(student._id, fee.month)}
-                    className={`px-3 py-1 text-xs rounded font-semibold text-white
-                      ${fee.status === "PAID" ? "bg-green-600" : "bg-red-600"}`}
-                  >
-                    {fee.status}
-                  </button>
-                ))}
-              </div>
-
-              {/* Row 3 */}
+            <div className="flex gap-2">
+              {student.feesHistory.map((fee) => (
+                <button
+                  key={fee.month}
+                  onClick={() => toggleFeeStatus(student._id, fee.month)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all shadow-sm
+                    ${
+                      fee.status === "PAID"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-rose-600 text-white"
+                    }`}
+                >
+                  {fee.status === "PAID" ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  {fee.status}
+                </button>
+              ))}
               <button
                 onClick={() => navigate(`/students/${student._id}`)}
-                className="mt-4 w-full border rounded-lg py-2 text-sm font-medium hover:bg-black hover:text-white transition"
+                className="p-3 bg-gray-900 text-white rounded-xl shadow-sm"
               >
-                View Profile
+                <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
-      {/* ================= DESKTOP TABLE ================= */}
-      <div className="hidden sm:block bg-white rounded-2xl shadow ring-1 ring-gray-200 overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-100 text-xs uppercase text-gray-600">
-            <tr>
-              <th className="px-5 py-4 text-left">Student Name</th>
-              <th className="px-5 py-4 text-left">Library ID</th>
-              <th className="px-5 py-4 text-left">Monthly Fees</th>
-              <th className="px-5 py-4 text-left">Fees Status</th>
-              <th className="px-5 py-4 text-center">Profile</th>
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50/50 text-xs font-bold text-gray-500 uppercase">
+              <th className="px-8 py-5 text-left">Student Name</th>
+              <th className="px-8 py-5 text-left">Library ID</th>
+              <th className="px-8 py-5 text-left">Monthly Fees</th>
+              <th className="px-8 py-5 text-left">Status Control</th>
+              <th className="px-8 py-5 text-center">Details</th>
             </tr>
           </thead>
-
-          <tbody>
-            {filteredFeesStudents.map((student, index) => (
+          <tbody className="divide-y divide-gray-50">
+            {filteredFeesStudents.map((student) => (
               <tr
                 key={student._id}
-                className={`border-t ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                }`}
+                className="hover:bg-gray-50/50 transition-colors"
               >
-                <td className="px-5 py-4 gap-2 font-medium flex items-center">
-                  <img
-                    src={student.image?.url}
-                    alt={student.name}
-                    className="h-4 w-4 sm:h-10 sm:w-10 rounded-full object-cover"
-                  />
-                  {student.name}
+                <td className="px-8 py-5">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={student.image?.url}
+                      alt=""
+                      className="h-10 w-10 rounded-xl object-cover shadow-sm"
+                    />
+                    <span className="font-bold text-gray-900">
+                      {student.name}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-5 py-4 font-mono text-xs">
-                  {student.libraryId}
+                <td className="px-8 py-5">
+                  <span className="font-mono text-sm text-gray-500">
+                    {student.libraryId}
+                  </span>
                 </td>
-                <td className="px-5 py-4 font-semibold">
-                  ₹{student.monthlyFees}
+                <td className="px-8 py-5">
+                  <span className="font-bold text-gray-900 text-lg">
+                    ₹{student.monthlyFees}
+                  </span>
                 </td>
-                <td className="px-5 py-4">
-                  {student.feesHistory.map((fee) => (
-                    <button
-                      key={fee.month}
-                      onClick={() => toggleFeeStatus(student._id, fee.month)}
-                      className={`px-3 py-1 text-xs rounded text-white mr-2
-                        ${
-                          fee.status === "PAID" ? "bg-green-600" : "bg-red-600"
-                        }`}
-                    >
-                      {fee.status === "PAID"
-                        ? "Paid(Mark Unpaid)"
-                        : "Unpaid(Mark Paid)"}
-                    </button>
-                  ))}
+                <td className="px-8 py-5">
+                  <div className="flex gap-2">
+                    {student.feesHistory.map((fee) => (
+                      <button
+                        key={fee.month}
+                        onClick={() => toggleFeeStatus(student._id, fee.month)}
+                        className={`group relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border
+                          ${
+                            fee.status === "PAID"
+                              ? "bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white"
+                              : "bg-rose-50 border-rose-100 text-rose-700 hover:bg-rose-600 hover:text-white"
+                          }`}
+                      >
+                        {fee.status === "PAID" ? "Mark Unpaid" : "Mark Paid"}
+                        <div
+                          className={`w-2 h-2 rounded-full ${fee.status === "PAID" ? "bg-emerald-500 group-hover:bg-white" : "bg-rose-500 group-hover:bg-white"}`}
+                        ></div>
+                      </button>
+                    ))}
+                  </div>
                 </td>
-                <td className="px-5 py-4 text-center">
+                <td className="px-8 py-5 text-center">
                   <button
                     onClick={() => navigate(`/students/${student._id}`)}
-                    className="px-4 py-1.5 text-xs border rounded hover:bg-black hover:text-white"
+                    className="p-2 hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 rounded-xl transition-all"
                   >
-                    View
+                    <ArrowUpRight className="w-5 h-5" />
                   </button>
                 </td>
               </tr>
@@ -177,12 +212,11 @@ const Fees = () => {
   );
 };
 
-/* Filter Button */
-const FilterButton = ({ children, active, onClick }) => (
+const TabButton = ({ children, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-xl text-sm font-medium
-      ${active ? "bg-black text-white" : "bg-white ring-1 ring-gray-300"}`}
+    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all
+      ${active ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
   >
     {children}
   </button>
