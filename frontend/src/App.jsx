@@ -14,9 +14,12 @@ import { useAuth } from "./context/AuthContext";
 import Home from "./pages/Home";
 
 const Layout = ({ children }) => (
-  <div className="flex grid-cols-2 min-h-screen bg-gray-100">
+  <div className="flex min-h-screen bg-white">
     <Sidebar />
-    <main className="flex-1 pt-16 md:pt-0 md:ml-64">{children}</main>
+    {/* Added transition and max-width for better desktop readability */}
+    <main className="flex-1 transition-all duration-300 pt-20 md:pt-0 md:ml-72 bg-white">
+      <div className="max-w-7xl mx-auto">{children}</div>
+    </main>
   </div>
 );
 
