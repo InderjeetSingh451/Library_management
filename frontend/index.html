@@ -51,7 +51,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- ================= OPEN GRAPH (SOCIAL SHARING) ================= -->
+    <!-- ================= OPEN GRAPH ================= -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Dr. Bhim Rao Ambedkar Library | Sirsa" />
     <meta
@@ -75,14 +75,13 @@
       content="Peaceful public study library near Paper Mill, Begu Road, Sirsa."
     />
 
-    <!-- ================= STRUCTURED DATA ================= -->
+    <!-- ================= STRUCTURED DATA - LIBRARY ================= -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Library",
         "name": "Dr. Bhim Rao Ambedkar Library",
         "url": "https://dr-bhim-rao-ambedkar-library.onrender.com",
-        "sameAs": [],
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Near Paper Mill, Begu Road",
@@ -91,6 +90,17 @@
           "postalCode": "125055",
           "addressCountry": "IN"
         }
+      }
+    </script>
+
+    <!-- ================= STRUCTURED DATA - WEBSITE (FOR SITE NAME) ================= -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Dr. Bhim Rao Ambedkar Library",
+        "alternateName": "Ambedkar Library Sirsa",
+        "url": "https://dr-bhim-rao-ambedkar-library.onrender.com/"
       }
     </script>
   </head>
